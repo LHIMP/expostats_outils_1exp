@@ -16,34 +16,31 @@ library(ggplot2)
 library(shinythemes)
 library(rjags)
 library(V8)
+library(here)
 
 ## langage parameters
 
-source("langParams.R")
-
-setwd("./scripts")
+source(here("langParams.R"))
 
 ##SEG SPECIFIC FUNCTIONS
 
-source("SEG/Data formatting functions_SEG.R")
+source(here("scripts", "SEG", "Data formatting functions_SEG.R"))
 
 ##COMMON
 
-source("Common/Simple censored imputation functions.R")
+source(here("scripts", "Common", "Simple censored imputation functions.R"))
 
-source("Common/Descriptive numerical output functions.R")
+source(here("scripts", "Common", "Descriptive numerical output functions.R"))
 
-source("Common/Descriptive graphs functions.R")
+source(here("scripts", "Common", "Descriptive graphs functions.R"))
 
-source("Common/Bayesian engine functions.R")
+source(here("scripts", "Common", "Bayesian engine functions.R"))
 
-source("Common/Numerical output functions.R")
+source(here("scripts", "Common", "Numerical output functions.R"))
 
-source("Common/Main graph functions.R")
+source(here("scripts", "Common", "Main graph functions.R"))
 
-setwd("..")
-
-source("gauge.R")
+source(here("gauge.R"))
 
 ####### HTML for data entry
 

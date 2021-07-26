@@ -50,6 +50,10 @@ inputTextarea <- function(inputId, value="", nrows, ncols) {
     singleton(tags$head(tags$script(src = "google-analytics.js"))),
     singleton(tags$head(tags$script(src = "textarea.js"))),
     singleton(tags$body(tags$noscript(src = "gatm.js"))),
+    tags$style(HTML("
+      div.risk-band-div {
+        margin-top: 40px
+      }")),
     tags$textarea(id = inputId,
                   class = "inputTextarea",
                   rows = nrows,
@@ -204,7 +208,11 @@ ui <- dashboardPage(
                   
                   p(gett("frac.10"),strong(textOutput("probrisk.perc",inline=TRUE))),
                   
-                  p(gett("frac.12"),strong(htmlOutput("finalrisk.perc",inline=TRUE)))
+                  p(gett("frac.12"),strong(htmlOutput("finalrisk.perc",inline=TRUE))),
+                  
+                  div(class='risk-band-div'),
+                  h4(gett("frac.graph.11")),
+                  plotOutput("riskband.frac")
                 ),
                 
                 #risk framework
@@ -761,8 +769,44 @@ server <- function(input, output) {
       )
     )
   })
-
-
+  
+  output$riskband.frac <- renderPlot({
+    
+    mu <-bayesian.analysis()$mu
+    
+    sigma<-bayesian.analysis()$sigma  
+    
+    oel <-(input$oel*input$al)
+    
+    frac.chain <-100*(1-pnorm((log(oel)-mu)/sigma))
+    
+    bande1 <- input$frac_threshold/10
+    
+    C1 <-100*length(frac.chain[frac.chain<bande1])/length(frac.chain)
+    C2 <-100*length(frac.chain[frac.chain>=bande1 & frac.chain<input$frac_threshold])/length(frac.chain)
+    C3 <-100*length(frac.chain[frac.chain>=input$frac_threshold ])/length(frac.chain)
+    
+    cats <- factor(c('C1','C2','C3'),labels=c(paste0('<', bande1, '%'),paste0(bande1, '-', input$frac_threshold, '%'),paste0('>', input$frac_threshold, '%')))
+    
+    data <-data.frame(perc=c(C1,C2,C3),cat=cats)
+    
+    graph8<- ggplot(data,aes(x=cats,y=perc))
+    graph8 <-graph8+
+      geom_bar(stat="identity",fill=c('green4','yellow','red'))+
+      theme(aspect.ratio=0.6)+
+      xlab(gett('riskplot.1'))+
+      ylab(gett('riskplot.2')) +
+      theme(axis.title.x=element_text(size=16,vjust=-1))+
+      theme(axis.text.x=element_text(size=16))+
+      theme(axis.title.y=element_text(size=16,angle=90))+
+      theme(axis.text.y=element_text(size=13,angle=90,hjust=0.5))+
+      theme(legend.position = "none")+
+      geom_text(x=1:3,y=c(C1,C2,C3)+5,label=paste(signif(c(C1,C2,C3),3),'%',sep=''),size=5,colour='grey28') +
+      scale_y_continuous(breaks=c(0,20,40,60,80,100),limits=c(0,110))
+    
+    
+    suppressWarnings(print(graph8))
+  })
 }
 
 shinyApp(ui, server)

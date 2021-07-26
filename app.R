@@ -212,6 +212,7 @@ ui <- dashboardPage(
                   
                   div(class='risk-band-div'),
                   h4(gett("frac.graph.11")),
+                  p(gett("frac.graph.12.1"), textOutput("acceptableExpoDiv10_1", inline=TRUE), gett("frac.graph.12.2"), textOutput("acceptableExpoDiv10_2", inline=TRUE), gett("frac.graph.12.3"), textOutput("acceptableExpo2",inline=TRUE), gett("frac.graph.12.4"), textOutput("acceptableExpo3",inline=TRUE),gett("frac.graph.12.5")),
                   plotOutput("riskband.frac")
                 ),
                 
@@ -807,6 +808,13 @@ server <- function(input, output) {
     
     suppressWarnings(print(graph8))
   })
+  
+  output$acceptableExpo1 <-renderText({return(paste(input$frac_threshold,"%",sep="")) })
+  output$acceptableExpo2 <-renderText({return(paste(input$frac_threshold,"%",sep="")) })
+  output$acceptableExpo3 <-renderText({return(paste(input$frac_threshold,"%",sep="")) })
+  
+  output$acceptableExpoDiv10_1 <-renderText({return(paste(input$frac_threshold/10,"%",sep="")) })
+  output$acceptableExpoDiv10_2 <-renderText({return(paste(input$frac_threshold/10,"%",sep="")) })
 }
 
 shinyApp(ui, server)

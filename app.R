@@ -800,7 +800,7 @@ server <- function(input, output) {
     graph9 <-graph9+
       geom_bar(stat="identity",fill=c('green4','greenyellow','yellow','orange','red'))+
       theme(aspect.ratio=0.6)+
-      xlab(paste0(percText(input$target_perc), ' category'))+
+      xlab(gett('95th Percentile Category'))+
       ylab(gett('Probability')) +
       theme(axis.title.x=element_text(size=16,vjust=-1))+
       theme(axis.text.x=element_text(size=13))+

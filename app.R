@@ -801,7 +801,7 @@ server <- function(input, output) {
       geom_bar(stat="identity",fill=c('green4','greenyellow','yellow','orange','red'))+
       theme(aspect.ratio=0.6)+
       xlab(paste0(percText(input$target_perc), ' category'))+
-      ylab('Probability') +
+      ylab(gett('Probability')) +
       theme(axis.title.x=element_text(size=16,vjust=-1))+
       theme(axis.text.x=element_text(size=13))+
       theme(axis.title.y=element_text(size=16,angle=90))+

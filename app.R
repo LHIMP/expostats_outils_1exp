@@ -233,7 +233,7 @@ ui <- dashboardPage(
           #risk meter
           box(
             h4(gett("frac.graph.11")),
-            p(gett("frac.graph.12.1"), textOutput("acceptableExpoDiv10_1", inline=TRUE), gett("frac.graph.12.2"), textOutput("acceptableExpoDiv10_2", inline=TRUE), gett("frac.graph.12.3"), textOutput("acceptableExpo2",inline=TRUE), gett("frac.graph.12.4"), textOutput("acceptableExpo3",inline=TRUE),gett("frac.graph.12.5")),
+            p(gett("perc.graph.12.1"), textOutput("percentile10",inline=TRUE), htmlOutput("perc.graph.12.2", inline=TRUE)),
             plotOutput("riskband.perc")
           )
         )
@@ -810,16 +810,11 @@ server <- function(input, output) {
       geom_text(x=1:5,y=c(C1,C2,C3,C4,C5)+5,label=paste(signif(c(C1,C2,C3,C4,C5),3),'%',sep=''),size=5,colour='grey28') +
       scale_y_continuous(breaks=c(0,20,40,60,80,100),limits=c(0,110))
     
-    
-    suppressWarnings(print(graph9))
+      suppressWarnings(print(graph9))
   })
   
-  output$acceptableExpo1 <-renderText({return(paste(input$frac_threshold,"%",sep="")) })
-  output$acceptableExpo2 <-renderText({return(paste(input$frac_threshold,"%",sep="")) })
-  output$acceptableExpo3 <-renderText({return(paste(input$frac_threshold,"%",sep="")) })
-  
-  output$acceptableExpoDiv10_1 <-renderText({return(paste(input$frac_threshold/10,"%",sep="")) })
-  output$acceptableExpoDiv10_2 <-renderText({return(paste(input$frac_threshold/10,"%",sep="")) })
+  output$percentile10 <-renderText({percText(input$target_perc)})
+  output$perc.graph.12.2 <- renderUI({ HTML(gettt("perc.graph.12.2", a('AIHA',href='https://www.aiha.org',target="_blank"))) })
 }
 
 shinyApp(ui, server)

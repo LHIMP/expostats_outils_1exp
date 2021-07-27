@@ -50,10 +50,6 @@ inputTextarea <- function(inputId, value="", nrows, ncols) {
     singleton(tags$head(tags$script(src = "google-analytics.js"))),
     singleton(tags$head(tags$script(src = "textarea.js"))),
     singleton(tags$body(tags$noscript(src = "gatm.js"))),
-    tags$style(HTML("
-      div.risk-band-div {
-        margin-top: 40px
-      }")),
     tags$textarea(id = inputId,
                   class = "inputTextarea",
                   rows = nrows,
@@ -116,6 +112,7 @@ ui <- dashboardPage(
                menuSubItem(gett("subtab.name.1"), tabName = "desc_stats", icon=icon("table")),
                menuSubItem(gett("subtab.name.2"), tabName = "param_estim", icon=icon("exchange")),
                menuSubItem(gett("subtab.name.3"), tabName = "risk_assess", icon=icon("flash")),
+               menuSubItem(gett("subtab.name.4"), tabName = "riskband", icon=icon("chart-bar")),
                startExpanded = TRUE
       ),
       menuItem(gett("about.tab.name"), tabName = "about_tab_name", icon = icon("question-circle"))
@@ -209,11 +206,6 @@ ui <- dashboardPage(
                   p(gett("frac.10"),strong(textOutput("probrisk.perc",inline=TRUE))),
                   
                   p(gett("frac.12"),strong(htmlOutput("finalrisk.perc",inline=TRUE))),
-                  
-                  div(class='risk-band-div'),
-                  h4(gett("frac.graph.11")),
-                  p(gett("frac.graph.12.1"), textOutput("acceptableExpoDiv10_1", inline=TRUE), gett("frac.graph.12.2"), textOutput("acceptableExpoDiv10_2", inline=TRUE), gett("frac.graph.12.3"), textOutput("acceptableExpo2",inline=TRUE), gett("frac.graph.12.4"), textOutput("acceptableExpo3",inline=TRUE),gett("frac.graph.12.5")),
-                  plotOutput("riskband.frac")
                 ),
                 
                 #risk framework
@@ -234,6 +226,17 @@ ui <- dashboardPage(
                 
                 
               )
+      ),
+      tabItem(tabName = "riskband",
+        fluidRow(
+          
+          #risk meter
+          box(
+            h4(gett("frac.graph.11")),
+            p(gett("frac.graph.12.1"), textOutput("acceptableExpoDiv10_1", inline=TRUE), gett("frac.graph.12.2"), textOutput("acceptableExpoDiv10_2", inline=TRUE), gett("frac.graph.12.3"), textOutput("acceptableExpo2",inline=TRUE), gett("frac.graph.12.4"), textOutput("acceptableExpo3",inline=TRUE),gett("frac.graph.12.5")),
+            plotOutput("riskband.perc")
+          )
+        )
       ),
       tabItem(tabName = "about_tab_name",
               fluidRow(
@@ -771,7 +774,7 @@ server <- function(input, output) {
     )
   })
   
-  output$riskband.frac <- renderPlot({
+  output$riskband.perc <- renderPlot({
     
     mu <-bayesian.analysis()$mu
     
@@ -779,34 +782,36 @@ server <- function(input, output) {
     
     oel <-(input$oel*input$al)
     
-    frac.chain <-100*(1-pnorm((log(oel)-mu)/sigma))
+    perc.chain <-exp(mu+qnorm(input$target_perc/100)*sigma)
     
-    bande1 <- input$frac_threshold/10
+    C1 <-100*length(perc.chain[perc.chain<0.01*oel])/length(perc.chain)
+    C2 <-100*length(perc.chain[perc.chain>=0.01*oel & perc.chain<0.1*oel])/length(perc.chain)
+    C3 <-100*length(perc.chain[perc.chain>=0.1*oel & perc.chain<0.5*oel])/length(perc.chain)
+    C4 <-100*length(perc.chain[perc.chain>=0.5*oel & perc.chain<1*oel])/length(perc.chain)
+    C5 <-100*length(perc.chain[perc.chain>=1*oel ])/length(perc.chain)
     
-    C1 <-100*length(frac.chain[frac.chain<bande1])/length(frac.chain)
-    C2 <-100*length(frac.chain[frac.chain>=bande1 & frac.chain<input$frac_threshold])/length(frac.chain)
-    C3 <-100*length(frac.chain[frac.chain>=input$frac_threshold ])/length(frac.chain)
     
-    cats <- factor(c('C1','C2','C3'),labels=c(paste0('<', bande1, '%'),paste0(bande1, '-', input$frac_threshold, '%'),paste0('>', input$frac_threshold, '%')))
+    cats <- factor(c('C1','C2','C3','C4','C5'),labels=c('<1%\nOEL','1-10%\nOEL','10-50%\nOEL','50-100%\nOEL','>OEL'))
     
-    data <-data.frame(perc=c(C1,C2,C3),cat=cats)
+    data <-data.frame(perc=c(C1,C2,C3,C4,C5),cat=cats)
     
-    graph8<- ggplot(data,aes(x=cats,y=perc))
-    graph8 <-graph8+
-      geom_bar(stat="identity",fill=c('green4','yellow','red'))+
+    
+    graph9<- ggplot(data,aes(x=cats,y=perc))
+    graph9 <-graph9+
+      geom_bar(stat="identity",fill=c('green4','greenyellow','yellow','orange','red'))+
       theme(aspect.ratio=0.6)+
-      xlab(gett('riskplot.1'))+
-      ylab(gett('riskplot.2')) +
+      xlab(paste0(percText(input$target_perc), ' category'))+
+      ylab('Probability') +
       theme(axis.title.x=element_text(size=16,vjust=-1))+
-      theme(axis.text.x=element_text(size=16))+
+      theme(axis.text.x=element_text(size=13))+
       theme(axis.title.y=element_text(size=16,angle=90))+
       theme(axis.text.y=element_text(size=13,angle=90,hjust=0.5))+
       theme(legend.position = "none")+
-      geom_text(x=1:3,y=c(C1,C2,C3)+5,label=paste(signif(c(C1,C2,C3),3),'%',sep=''),size=5,colour='grey28') +
+      geom_text(x=1:5,y=c(C1,C2,C3,C4,C5)+5,label=paste(signif(c(C1,C2,C3,C4,C5),3),'%',sep=''),size=5,colour='grey28') +
       scale_y_continuous(breaks=c(0,20,40,60,80,100),limits=c(0,110))
     
     
-    suppressWarnings(print(graph8))
+    suppressWarnings(print(graph9))
   })
   
   output$acceptableExpo1 <-renderText({return(paste(input$frac_threshold,"%",sep="")) })

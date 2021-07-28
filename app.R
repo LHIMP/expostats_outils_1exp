@@ -233,7 +233,7 @@ ui <- dashboardPage(
           #risk meter
           box(
             h4(gett("frac.graph.11")),
-            p(gett("perc.graph.12.1"), textOutput("percentile10",inline=TRUE), htmlOutput("perc.graph.12.2", inline=TRUE)),
+            p(gett("p95.graph.12.1"), textOutput("percentile10",inline=TRUE), htmlOutput("perc.graph.12.2", inline=TRUE)),
             plotOutput("riskband.perc")
           )
         )

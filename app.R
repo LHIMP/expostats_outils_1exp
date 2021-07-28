@@ -791,7 +791,12 @@ server <- function(input, output) {
     C5 <-100*length(perc.chain[perc.chain>=1*oel ])/length(perc.chain)
     
     
-    cats <- factor(c('C1','C2','C3','C4','C5'),labels=c('<1%\nOEL','1-10%\nOEL','10-50%\nOEL','50-100%\nOEL','>OEL'))
+    cats <- factor(c('C1','C2','C3','C4','C5'),
+                   labels=c(paste0('<1%\n', gett('OEL')),
+                            paste0('1-10%\n', gett('OEL')),
+                            paste0('10-50%\n', gett('OEL')),
+                            paste0('50-100%\n', gett('OEL')),
+                            paste0('>', gett('OEL'))))
     
     data <-data.frame(perc=c(C1,C2,C3,C4,C5),cat=cats)
     
@@ -800,7 +805,7 @@ server <- function(input, output) {
     graph9 <-graph9+
       geom_bar(stat="identity",fill=c('green4','greenyellow','yellow','orange','red'))+
       theme(aspect.ratio=0.6)+
-      xlab(gett('95th Percentile Category'))+
+      xlab(gett('95th Percentile'))+
       ylab(gett('Probability')) +
       theme(axis.title.x=element_text(size=16,vjust=-1))+
       theme(axis.text.x=element_text(size=13))+
